@@ -195,7 +195,7 @@ def Optimize(fittingFunction):
     nLoops_2 = 0
     myfit = lmfit.minimize(fittingFunction, paramsOpt1)
     paramsOpt1 = myfit.params
-    return myfit
+#    return myfit
 
 def analyseError(data,slp,var):
     global dat
@@ -233,7 +233,7 @@ def parameterStudy(par,var):
     for x in xs:
         getParameter(par).value = x
         # find the solution
-        myfit = Optimize(fittingFunction)
+        Optimize(fittingFunction)
         aa = np.array([factor*x, Fc, Ft, math.sqrt((Toint-kchip)**2+(sigmaN-sigmaNmax)**2), C0, delta, 180/math.pi*phi])
         # Corretion for delta
         if (par=='delta') :
@@ -312,7 +312,7 @@ def parameterStudy(par,var):
     pylab.show()   
     getParameter(par).vary = True    
 
-def plotCurves(y, lab, ylab, tit, nam):
+def plotCurves(y, advances, lab, ylab, tit, nam):
     pylab.figure(figsize = (11.69,8.27)) # for a4 landscape 
     pylab.rc('text', usetex=True)
     pylab.rcParams['xtick.labelsize'] = 16
@@ -330,7 +330,7 @@ def plotCurves(y, lab, ylab, tit, nam):
     pylab.savefig(nam, transparent=True, bbox_inches='tight', pad_inches=0)
     pylab.show()   
 
-def plotVariations(speeds,advances):
+def plotVariations(speeds, advances):
     global V, t1, xs
     xs = []
     ys_Fc = []
@@ -354,7 +354,7 @@ def plotVariations(speeds,advances):
             t1 = advance
             # Initialisation de l'optimisation
             reinitParams(paramsOpt1,paramsOpt2)
-            myfit = Optimize(fittingFunction)
+            Optimize(fittingFunction)
             if (TAB > 0) :
                 x.append(speed)
                 y_Fc.append(Fc)
@@ -372,14 +372,13 @@ def plotVariations(speeds,advances):
         ys_phi.append(y_phi)
         ys_t2.append(y_t2)
         ys_lc.append(y_lc)
-    plotCurves(ys_Fc, 'F_C', '$Force\ F_C\ (N)$', 'Cutting force $F_C$ v.s. cutting speed $V$', 'Fc_vs_Speed.svg')
-    plotCurves(ys_Ft, 'F_T', '$Force\ F_T\ (N)$', 'Advancing\ force $F_T$ v.s. cutting speed $V$', 'Fa_vs_Speed.svg')
-    plotCurves(ys_TAB, 'T_{AB}', '$Temperature\ T_{AB}\ (^{\circ} C)$', 'Temperature $T_{AB}$ v.s. cutting speed $V$', 'TAB_vs_Speed.svg')
-    plotCurves(ys_Tint, 'T_{int}', '$Temperature\ T_{int}\ (^{\circ}C)$', 'Temperature $T_{int}$ v.s. cutting speed $V$', 'Tint_vs_Speed.svg')
-    plotCurves(ys_t2, 't_2', '$Thickness\ t_2\ (mm)$', 'Chip thickness $t_2$ v.s. cutting speed $V$', 't2_vs_Speed.svg')
-    plotCurves(ys_lc, 'l_c', '$Length\ l_c\ (mm)$', 'Contact length $l_c$ v.s. cutting speed $V$', 'lc_vs_Speed.svg')
-    plotCurves(ys_phi, '\phi', '$Angle\ \phi\ (^{\circ})$', 'Shear plane angle $\phi$ v.s. cutting speed $V$', 'phi_vs_Speed.svg')
-
+    plotCurves(ys_Fc, advances, 'F_C', '$Force\ F_C\ (N)$', 'Cutting force $F_C$ v.s. cutting speed $V$', 'Fc_vs_Speed.svg')
+    plotCurves(ys_Ft, advances, 'F_T', '$Force\ F_T\ (N)$', 'Advancing\ force $F_T$ v.s. cutting speed $V$', 'Fa_vs_Speed.svg')
+    plotCurves(ys_TAB, advances, 'T_{AB}', '$Temperature\ T_{AB}\ (^{\circ} C)$', 'Temperature $T_{AB}$ v.s. cutting speed $V$', 'TAB_vs_Speed.svg')
+    plotCurves(ys_Tint, advances, 'T_{int}', '$Temperature\ T_{int}\ (^{\circ}C)$', 'Temperature $T_{int}$ v.s. cutting speed $V$', 'Tint_vs_Speed.svg')
+    plotCurves(ys_t2, advances, 't_2', '$Thickness\ t_2\ (mm)$', 'Chip thickness $t_2$ v.s. cutting speed $V$', 't2_vs_Speed.svg')
+    plotCurves(ys_lc, advances, 'l_c', '$Length\ l_c\ (mm)$', 'Contact length $l_c$ v.s. cutting speed $V$', 'lc_vs_Speed.svg')
+    plotCurves(ys_phi, advances, '\phi', '$Angle\ \phi\ (^{\circ})$', 'Shear plane angle $\phi$ v.s. cutting speed $V$', 'phi_vs_Speed.svg')
 
 # List of parameters
 #global paramsOpt1, paramsOpt2
@@ -396,7 +395,7 @@ reinitParams(paramsOpt1,paramsOpt2)
 mchip = rho*V*t1*w
 
 # Calcul du système d'équations
-myfit = Optimize(fittingFunction)
+Optimize(fittingFunction)
 
 # Recalcul de l'optimal au cas où mais normalement, ça ne sert à rien
 #Toint, kchip = compute_Toint_Kchip()
@@ -430,8 +429,9 @@ C0_opt = C0 #=paramsOpt2['C0'].value
 phi_opt = phi #=paramsOpt2['phi'].value
 delta_opt = delta #=paramsOpt1['delta'].value
 
-
+# --------------------------------------------------------------------------------------------------
 # SECTION 1
+# --------------------------------------------------------------------------------------------------
 # This zone serves to generate the graphs of the evolution of 1 internal parameter vs. another one
 """
 parameterStudy('delta','$Plastic\ zone\ thickness\ \delta$')
@@ -439,7 +439,9 @@ parameterStudy('C0','$Strain\ rate\ constant\ C_0$')
 parameterStudy('phi','$Shear\ angle\ \phi$')
 """
 
+# --------------------------------------------------------------------------------------------------
 # SECTION 2
+# --------------------------------------------------------------------------------------------------
 # Sensivity study
 """
 speeds = np.linspace(100, 400, 25, True)
@@ -447,7 +449,9 @@ advances =  np.array([0.15e-3, 0.2e-3, 0.25e-3, 0.3e-3, 0.4e-3, 0.5e-3])
 plotVariations(speeds,advances)
 """
 
+# --------------------------------------------------------------------------------------------------
 # SECTION 3
+# --------------------------------------------------------------------------------------------------
 # Tests the unicity of the solution by running 15625 runs
 # Warning, this can be quite long to execute
 """
@@ -478,7 +482,7 @@ for deltaI in deltaVals:
             paramsOpt2['C0'].value=C0I
             paramsOpt2['phi'].value=phiI
             paramsOpt1['delta'].value=deltaI
-            myfit = Optimize(fittingFunction)
+            Optimize(fittingFunction)
             deltaFVals[ii] = delta
             phiFVals[ii] = phi*180/math.pi
             C0FVals[ii] = C0
