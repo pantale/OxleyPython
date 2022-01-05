@@ -234,6 +234,12 @@ def Optimize(FittingFunction):
     # Get the results
     paramsOpt1 = myfit.params
 
+def RUN():
+    # Initialisation of the Optimizer
+    ReinitializeParameters(paramsOpt1, paramsOpt2)
+    # Computes the solution
+    Optimize(FittingFunction)
+
 # Initialize the lists of parameters
 paramsOpt1 = lmfit.Parameters()
 paramsOpt2 = lmfit.Parameters()
@@ -243,11 +249,11 @@ paramsOpt1.add('delta', value = 0.015, min = 0.005, max = 0.2)
 paramsOpt2.add('C0', value = 6, min = 2, max = 10)
 paramsOpt2.add('phi', value = 26.5 * math.pi / 180, min = 8 * math.pi / 180, max = 45 * math.pi / 180)
 
-# Initialisation of the Optimizer
-ReinitializeParameters(paramsOpt1, paramsOpt2)
-
 # Computes the mchip value
 mchip = rho*V*t1*w
+
+# Initialisation of the Optimizer
+ReinitializeParameters(paramsOpt1, paramsOpt2)
 
 # Computes the solution
 Optimize(FittingFunction)
@@ -260,25 +266,25 @@ print("C0 : ", round(C0, 3))
 print("delta : ", round(delta, 3))
 
 print("Internal error : ", round(math.sqrt((Toint-kchip)**2 + (sigmaNmax-sigmaN)**2), 10), "Pa")
-print("Number of loops : ", nLoops_1, nLoops_2)
+print("Number of loops : ", nLoops_1, "and", nLoops_2)
 
-print("Shear angle : ", round(phi * 180/math.pi, 1), " deg")
+print("Shear angle : ", round(phi * 180/math.pi, 1), "deg")
 
 print("Cutting force Fc   : ", round(Fc, 1), "N (", round(Fc / w / 1000, 1), "N/mm)")
 print("Advancing force Fa : ", round(Ft, 1), "N (", round(Ft / w / 1000, 1), "N/mm)")
 
-print("Chip thickness : ", round(t2 * 1000, 2), " mm")
-print("Tool/Chip contact length : ", round(lc * 1000, 2), " mm")
+print("Chip thickness : ", round(t2 * 1000, 2), "mm")
+print("Tool/Chip contact length : ", round(lc * 1000, 2), "mm")
 
 print("Strain in zone 1 : ", round(EpsAB, 2))
-print("Strain rate in zone 1 : ", round(EpspAB, 1), " ms-1")
-print("Temperature in zone 1 : ", round(TAB - T0, 1), " C")
-print("Stress in zone 1 : ", round(kAB / 1e6, 1), " MPa")
+print("Strain rate in zone 1 : ", round(EpspAB, 1), "ms-1")
+print("Temperature in zone 1 : ", round(TAB - T0, 1), "°C")
+print("Stress in zone 1 : ", round(kAB / 1e6, 1), "MPa")
 
 print("Strain in zone 2 : ", round(Epsint, 2))
-print("Strain rate in zone 2 : ", round(Epspint, 1), " ms-1")
-print("Temperature in zone 2 : ", round(Tint - T0, 1), " C")
-print("Stress in zone 2 : ", round(sigmaNmax / 1e6, 1), " MPa")
+print("Strain rate in zone 2 : ", round(Epspint, 1), "ms-1")
+print("Temperature in zone 2 : ", round(Tint - T0, 1), "°C")
+print("Stress in zone 2 : ", round(sigmaNmax / 1e6, 1), "MPa")
 	
 C0_opt = C0 # = paramsOpt2['C0'].value
 phi_opt = phi # = paramsOpt2['phi'].value
@@ -317,8 +323,8 @@ def ParameterStudy(par, var):
     tab = np.delete(tab, 0, 0)
     # Plot the first Figure
     pylab.rc('text', usetex = True)
-    pylab.rcParams['xtick.labelsize'] = 14
-    pylab.rcParams['ytick.labelsize'] = 14
+    pylab.rcParams['xtick.labelsize'] = 18
+    pylab.rcParams['ytick.labelsize'] = 18
     fig, ax1 = pylab.subplots(figsize = (11.69, 8.27))
     ax2 = ax1.twinx()
     ax2.ticklabel_format(style = 'sci', scilimits = (-2, 2))
@@ -329,20 +335,21 @@ def ParameterStudy(par, var):
     locY = max(np.amax(tab[:, 1]), np.amax(tab[:, 2]))
     if (par == 'C0'):
         pylab.axvline(x = C0_opt, color = 'k')
-        ax1.annotate(' $C_0 = '+str(round(C0_opt, 3))+'$', xy = (C0_opt, locY), fontsize = 18)
+        ax1.annotate(' $C_0 = '+str(round(C0_opt, 3))+'$', xy = (C0_opt, locY), fontsize = 22)
         ax1.set_xlim([GetParameter(par).min, GetParameter(par).max])
     if (par == 'delta'):
         pylab.axvline(x = delta_opt, color = 'k')
-        ax1.annotate(' $\delta = '+str(round(delta_opt, 3))+'$', xy = (delta_opt, locY), fontsize = 18)
+        ax1.annotate(' $\delta = '+str(round(delta_opt, 3))+'$', xy = (delta_opt, locY), fontsize = 22)
         ax1.set_xlim([GetParameter(par).min, GetParameter(par).max])
     if (par == 'phi'):
         pylab.axvline(x = 180/math.pi*phi_opt, color = 'k')
-        ax1.annotate(' $\phi = '+str(round(180/math.pi*phi_opt, 3))+'$', xy = (180/math.pi*phi_opt, locY), fontsize = 18)
+        ax1.annotate(' $\phi = '+str(round(180/math.pi*phi_opt, 3))+'$', xy = (180/math.pi*phi_opt, locY), fontsize = 22)
         ax1.set_xlim([180/math.pi*GetParameter(par).min, 180/math.pi*GetParameter(par).max])
-    ax1.set_xlabel(var, fontsize = 18)
-    ax1.set_ylabel('$Cutting\ forces\ F_{C}, \ F_{T}$', fontsize = 18)
-    ax2.set_ylabel('$Error\ \Delta F$', fontsize = 18)
-    pylab.legend(handles = [p_Fc, p_Fn, p_C], labels = ['$F_C$', '$F_T$', '$\Delta F$'], fontsize = 16, fancybox = True, shadow = True, frameon = True, loc = 'lower right')
+    ax1.set_xlabel(var, fontsize = 22)
+    ax1.set_ylabel('$Cutting\ forces\ F_{C}, \ F_{T}\ (N)$', fontsize = 22)
+    ax2.set_ylabel('$Error\ \Delta F\ (N)$', fontsize = 22)
+    ax2.set_ylim([0,tab[:, 3].max()])
+    pylab.legend(handles = [p_Fc, p_Fn, p_C], labels = ['$F_C$', '$F_T$', '$\Delta F$'], fontsize = 20, fancybox = True, shadow = True, frameon = True, loc = 'lower right')
     pylab.savefig(par+'.svg', transparent = True, bbox_inches = 'tight', pad_inches = 0)
     pylab.show()
     # Plot the second figure
@@ -352,34 +359,34 @@ def ParameterStudy(par, var):
     if (par == 'C0'):
         locY = np.amax(tab[:, 5])
         pylab.axvline(x = C0_opt, color = 'k')
-        ax1.annotate(' $C_0 = '+str(round(C0_opt, 3))+'$', xy = (C0_opt, locY), fontsize = 18)
+        ax1.annotate(' $C_0 = '+str(round(C0_opt, 3))+'$', xy = (C0_opt, locY), fontsize = 22)
         ax1.set_xlim([GetParameter(par).min, GetParameter(par).max])
         p_C1, = ax1.plot(tab[:, 0], tab[:, 5], 'r', linewidth = 2)
         p_C2, = ax2.plot(tab[:, 0], tab[:, 6], 'b', linewidth = 2)
-        ax1.set_ylabel('$Plastic\ zone\ thickness\ \delta$', fontsize = 18)
-        ax2.set_ylabel('$Shear\ angle\ \phi$', fontsize = 18)
-        pylab.legend(handles = [p_C1, p_C2], labels = ['$\delta$', '$\phi$'], fontsize = 16, fancybox = True, shadow = True, frameon = True, loc = 'lower right')
+        ax1.set_ylabel('$Plastic\ zone\ thickness\ \delta$', fontsize = 22)
+        ax2.set_ylabel('$Shear\ angle\ \phi$', fontsize = 22)
+        pylab.legend(handles = [p_C1, p_C2], labels = ['$\delta$', '$\phi$'], fontsize = 20, fancybox = True, shadow = True, frameon = True, loc = 'lower right')
     if (par == 'delta'):
         locY = np.amax(tab[:, 4])
         pylab.axvline(x = delta_opt, color = 'k')
-        ax1.annotate(' $\delta = '+str(round(delta_opt, 3))+'$', xy = (delta_opt, locY), fontsize = 18)
+        ax1.annotate(' $\delta = '+str(round(delta_opt, 3))+'$', xy = (delta_opt, locY), fontsize = 22)
         ax1.set_xlim([GetParameter(par).min, GetParameter(par).max])
         p_C1, = ax1.plot(tab[:, 0], tab[:, 4], 'r', linewidth = 2)
         p_C2, = ax2.plot(tab[:, 0], tab[:, 6], 'b', linewidth = 2)
-        ax1.set_ylabel('$Strain\ rate\ constant\ C_0$', fontsize = 18)
-        ax2.set_ylabel('$Shear\ angle\ \phi$', fontsize = 18)
-        pylab.legend(handles = [p_C1, p_C2], labels = ['$C_0$', '$\phi$'], fontsize = 16, fancybox = True, shadow = True, frameon = True, loc = 'lower right')
+        ax1.set_ylabel('$Strain\ rate\ constant\ C_0$', fontsize = 22)
+        ax2.set_ylabel('$Shear\ angle\ \phi$', fontsize = 22)
+        pylab.legend(handles = [p_C1, p_C2], labels = ['$C_0$', '$\phi$'], fontsize = 20, fancybox = True, shadow = True, frameon = True, loc = 'lower right')
     if (par == 'phi'):
         locY = np.amax(tab[:, 4])
         pylab.axvline(x = 180/math.pi*phi_opt, color = 'k')
-        ax1.annotate(' $\phi = '+str(round(180/math.pi*phi_opt, 3))+'$', xy = (180/math.pi*phi_opt, locY), fontsize = 18)
+        ax1.annotate(' $\phi = '+str(round(180/math.pi*phi_opt, 3))+'$', xy = (180/math.pi*phi_opt, locY), fontsize = 22)
         ax1.set_xlim([180/math.pi*GetParameter(par).min, 180/math.pi*GetParameter(par).max])
         p_C1, = ax1.plot(tab[:, 0], tab[:, 4], 'r', linewidth = 2)
         p_C2, = ax2.plot(tab[:, 0], tab[:, 5], 'b', linewidth = 2)
-        ax1.set_ylabel('$Strain\ rate\ constant\ C_0$', fontsize = 18)
-        ax2.set_ylabel('$Plastic\ zone\ thickness\ \delta$', fontsize = 18)
-        pylab.legend(handles = [p_C1, p_C2], labels = ['$C_0$', '$\delta$'], fontsize = 16, fancybox = True, shadow = True, frameon = True, loc = 'lower right')
-    ax1.set_xlabel(var, fontsize = 18)
+        ax1.set_ylabel('$Strain\ rate\ constant\ C_0$', fontsize = 22)
+        ax2.set_ylabel('$Plastic\ zone\ thickness\ \delta$', fontsize = 22)
+        pylab.legend(handles = [p_C1, p_C2], labels = ['$C_0$', '$\delta$'], fontsize = 20, fancybox = True, shadow = True, frameon = True, loc = 'lower right')
+    ax1.set_xlabel(var, fontsize = 22)
     pylab.savefig(par+'Internal.svg', transparent = True, bbox_inches = 'tight', pad_inches = 0)
     pylab.show()   
     GetParameter(par).vary = True
@@ -391,84 +398,6 @@ ParameterStudy('phi', '$Shear\ angle\ \phi$')
 
 # --------------------------------------------------------------------------------------------------
 # SECTION 2
-# --------------------------------------------------------------------------------------------------
-# Sensivity study
-"""
-def PlotCurves(y, advances, lab, ylab, tit, nam):
-    pylab.figure(figsize = (11.69, 8.27)) # for a4 landscape 
-    pylab.rc('text', usetex = True)
-    pylab.rcParams['xtick.labelsize'] = 16
-    pylab.rcParams['ytick.labelsize'] = 16
-    ii = 0
-    for advance in advances:
-        pylab.plot (xs[ii], y[ii], label = '$'+lab+'\ (t_1 = '+str(round(advances[ii]*1e3, 2))+'\ mm)$', linewidth = 2)
-        ii += 1
-    pylab.xlabel('$Cutting\ speed\ V\ (m/min)$', fontsize = 16)
-    pylab.ylabel(ylab, fontsize = 16)
-    pylab.legend(loc = 'upper right', bbox_to_anchor = (1.0, 1.0), fontsize = 12, frameon = True, 
-                         fancybox = True, shadow = True, ncol = 1, numpoints = 1)
-    pylab.grid(True)
-    pylab.title(tit, y = 1.04, fontsize = 20)
-    pylab.savefig(nam, transparent = True, bbox_inches = 'tight', pad_inches = 0)
-    pylab.show()   
-
-def PlotVariations(speeds, advances):
-    global V, t1, xs
-    xs = []
-    ys_Fc = []
-    ys_Ft = [] 
-    ys_TAB  = [] 
-    ys_Tint  = [] 
-    ys_phi  = [] 
-    ys_t2  = [] 
-    ys_lc  = [] 
-    for advance in advances:
-        x = []
-        y_Fc = []
-        y_Ft = [] 
-        y_TAB  = [] 
-        y_Tint  = [] 
-        y_phi  = [] 
-        y_t2  = [] 
-        y_lc  = [] 
-        for speed in speeds:
-            V = speed / 60
-            t1 = advance
-            # Initialisation de l'optimisation
-            ReinitializeParameters(paramsOpt1, paramsOpt2)
-            Optimize(FittingFunction)
-            if (TAB  >  0) :
-                x.append(speed)
-                y_Fc.append(Fc)
-                y_Ft.append(Ft)
-                y_TAB.append(TAB-T0)
-                y_Tint.append(Tint-T0)
-                y_phi.append(phi*180/math.pi)
-                y_t2.append(1000*t2)
-                y_lc.append(1000*lc)
-        xs.append(x)
-        ys_Fc.append(y_Fc)
-        ys_Ft.append(y_Ft)
-        ys_TAB.append(y_TAB)
-        ys_Tint.append(y_Tint)
-        ys_phi.append(y_phi)
-        ys_t2.append(y_t2)
-        ys_lc.append(y_lc)
-    PlotCurves(ys_Fc, advances, 'F_C', '$Force\ F_C\ (N)$', 'Cutting force $F_C$ v.s. cutting speed $V$', 'Fc_vs_Speed.svg')
-    PlotCurves(ys_Ft, advances, 'F_T', '$Force\ F_T\ (N)$', 'Advancing\ force $F_T$ v.s. cutting speed $V$', 'Fa_vs_Speed.svg')
-    PlotCurves(ys_TAB, advances, 'T_{AB}', '$Temperature\ T_{AB}\ (^{\circ} C)$', 'Temperature $T_{AB}$ v.s. cutting speed $V$', 'TAB_vs_Speed.svg')
-    PlotCurves(ys_Tint, advances, 'T_{int}', '$Temperature\ T_{int}\ (^{\circ}C)$', 'Temperature $T_{int}$ v.s. cutting speed $V$', 'Tint_vs_Speed.svg')
-    PlotCurves(ys_t2, advances, 't_2', '$Thickness\ t_2\ (mm)$', 'Chip thickness $t_2$ v.s. cutting speed $V$', 't2_vs_Speed.svg')
-    PlotCurves(ys_lc, advances, 'l_c', '$Length\ l_c\ (mm)$', 'Contact length $l_c$ v.s. cutting speed $V$', 'lc_vs_Speed.svg')
-    PlotCurves(ys_phi, advances, '\phi', '$Angle\ \phi\ (^{\circ})$', 'Shear plane angle $\phi$ v.s. cutting speed $V$', 'phi_vs_Speed.svg')
-
-speeds = np.linspace(100, 400, 25, True)
-advances =  np.array([0.15e-3, 0.2e-3, 0.25e-3, 0.3e-3, 0.4e-3, 0.5e-3])
-PlotVariations(speeds, advances)
-"""
-
-# --------------------------------------------------------------------------------------------------
-# SECTION 3
 # --------------------------------------------------------------------------------------------------
 # Tests the unicity of the solution by running 15625 runs
 # Warning, this can be quite long to execute
@@ -531,14 +460,14 @@ def plotHisto(X, Y, mean, title, xlab, ylab, figname):
     dx = 0.8*(X[1]-X[0])
     pylab.figure(figsize = (11.69, 8.27)) # for a4 landscape
     pylab.rc('text', usetex = True)
-    pylab.rcParams['xtick.labelsize'] = 16
-    pylab.rcParams['ytick.labelsize'] = 16
+    pylab.rcParams['xtick.labelsize'] = 18
+    pylab.rcParams['ytick.labelsize'] = 18
     pylab.bar(X, Y, dx, color = '#0000cc')
-    pylab.ylabel(ylab, fontsize = 16)
-    pylab.xlabel(xlab, fontsize = 16)
-    pylab.title(title, fontsize = 20)
+    pylab.ylabel(ylab, fontsize = 22)
+    pylab.xlabel(xlab, fontsize = 22)
+    pylab.title(title, fontsize = 22)
     pylab.axvline(x = mean, color = '#cc0000')
-    pylab.annotate(' $mean = '+str(round(mean, 1))+'$', xy = (mean, 0.95*(Y.max()-Y.min())+Y.min()), fontsize = 16)
+    pylab.annotate(' $mean = '+str(round(mean, 1))+'$', xy = (mean, 0.95*(Y.max()-Y.min())+Y.min()), fontsize = 20)
     pylab.grid(True)
     pylab.savefig(figname)
     pylab.show()
@@ -576,5 +505,83 @@ print('C0FVals ', C0FVals.min(), ' ', C0FVals.max(), ' ', C0FVals.mean(), ' ', (
 
 X, Y = histogramCreate(nLoops1Vals, 10)
 plotHisto(X, Y, nLoops1Vals.mean(), '$Histogram\ of\ the\ number of\ loops\ to\ get\ a\ solution$', '$Number\ of\ loops\ needed\ to\ converge$', '$Frequency$', 'Loops.svg')
+"""
+
+# --------------------------------------------------------------------------------------------------
+# SECTION 3
+# --------------------------------------------------------------------------------------------------
+# Sensivity study
+"""
+def PlotCurves(y, advances, lab, ylab, tit, nam):
+    pylab.figure(figsize = (11.69, 8.27)) # for a4 landscape 
+    pylab.rc('text', usetex = True)
+    pylab.rcParams['xtick.labelsize'] = 18
+    pylab.rcParams['ytick.labelsize'] = 18
+    ii = 0
+    for advance in advances:
+        pylab.plot (xs[ii], y[ii], label = '$'+lab+'\ (t_1 = '+str(round(advances[ii]*1e3, 2))+'\ mm)$', linewidth = 2)
+        ii += 1
+    pylab.xlabel('$Cutting\ speed\ V\ (m/min)$', fontsize = 22)
+    pylab.ylabel(ylab, fontsize = 22)
+    pylab.legend(loc = 'upper right', bbox_to_anchor = (1.0, 1.0), fontsize = 16, frameon = True, 
+                         fancybox = True, shadow = True, ncol = 1, numpoints = 1)
+    pylab.grid(True)
+    pylab.title(tit, y = 1.04, fontsize = 22)
+    pylab.savefig(nam, transparent = True, bbox_inches = 'tight', pad_inches = 0)
+    pylab.show()   
+
+def PlotVariations(speeds, advances):
+    global V, t1, xs
+    xs = []
+    ys_Fc = []
+    ys_Ft = [] 
+    ys_TAB  = [] 
+    ys_Tint  = [] 
+    ys_phi  = [] 
+    ys_t2  = [] 
+    ys_lc  = [] 
+    for advance in advances:
+        x = []
+        y_Fc = []
+        y_Ft = [] 
+        y_TAB  = [] 
+        y_Tint  = [] 
+        y_phi  = [] 
+        y_t2  = [] 
+        y_lc  = [] 
+        for speed in speeds:
+            V = speed / 60
+            t1 = advance
+            # Initialisation de l'optimisation
+            ReinitializeParameters(paramsOpt1, paramsOpt2)
+            Optimize(FittingFunction)
+            if (TAB  >  0) :
+                x.append(speed)
+                y_Fc.append(Fc)
+                y_Ft.append(Ft)
+                y_TAB.append(TAB-T0)
+                y_Tint.append(Tint-T0)
+                y_phi.append(phi*180/math.pi)
+                y_t2.append(1000*t2)
+                y_lc.append(1000*lc)
+        xs.append(x)
+        ys_Fc.append(y_Fc)
+        ys_Ft.append(y_Ft)
+        ys_TAB.append(y_TAB)
+        ys_Tint.append(y_Tint)
+        ys_phi.append(y_phi)
+        ys_t2.append(y_t2)
+        ys_lc.append(y_lc)
+    PlotCurves(ys_Fc, advances, 'F_C', '$Force\ F_C\ (N)$', 'Cutting force $F_C$ v.s. cutting speed $V$', 'Fc_vs_Speed.svg')
+    PlotCurves(ys_Ft, advances, 'F_T', '$Force\ F_T\ (N)$', 'Advancing\ force $F_T$ v.s. cutting speed $V$', 'Fa_vs_Speed.svg')
+    PlotCurves(ys_TAB, advances, 'T_{AB}', '$Temperature\ T_{AB}\ (^{\circ} C)$', 'Temperature $T_{AB}$ v.s. cutting speed $V$', 'TAB_vs_Speed.svg')
+    PlotCurves(ys_Tint, advances, 'T_{int}', '$Temperature\ T_{int}\ (^{\circ}C)$', 'Temperature $T_{int}$ v.s. cutting speed $V$', 'Tint_vs_Speed.svg')
+    PlotCurves(ys_t2, advances, 't_2', '$Thickness\ t_2\ (mm)$', 'Chip thickness $t_2$ v.s. cutting speed $V$', 't2_vs_Speed.svg')
+    PlotCurves(ys_lc, advances, 'l_c', '$Length\ l_c\ (mm)$', 'Contact length $l_c$ v.s. cutting speed $V$', 'lc_vs_Speed.svg')
+    PlotCurves(ys_phi, advances, '\phi', '$Angle\ \phi\ (^{\circ})$', 'Shear plane angle $\phi$ v.s. cutting speed $V$', 'phi_vs_Speed.svg')
+
+speeds = np.linspace(100, 400, 25, True)
+advances =  np.array([0.15e-3, 0.2e-3, 0.25e-3, 0.3e-3, 0.4e-3, 0.5e-3])
+PlotVariations(speeds, advances)
 """
 
