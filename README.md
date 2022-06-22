@@ -2,8 +2,6 @@
 These are the source files of the implementation of the Oxley's machining model using the LMFIT library in Python. This work is related to the PhD thesis of Maxime Dawoua Kaoutoing  
 Maxime. D. Kaoutoing, *Contributions à la modélisation et la simulation de la coupe des métaux: vers un outil d'aide à la surveillance par apprentissage*, PhD Thesis, Toulouse University, 2020
 
-*This thesis is currently only available upon request as the publication process after defense is not fully completed at the University's library.*
-
 ## Usage of the software
 
 All code is in the `ExtOxley_LMFIT.py` file, and execution of the code is done using the following command:
