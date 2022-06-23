@@ -12,6 +12,7 @@ Maxime. D. Kaoutoing, Contributions à la modélisation et la simulation de la c
 @author: Olivier Pantalé
 """
 
+# Initialisation
 import math
 import numpy as np
 import pylab
@@ -55,9 +56,12 @@ TAB_precision = 1e-3        # Precision on the evaluation of TAB
 Tc_precision = 1e-3         # Precision on the evaluation of Tc
 sqrt3 = math.sqrt(3)        # Constant value for square root of 3
 
+# Computes the mchip value from cutting parameters
+mchip = rho * V * t1 * w
+
 # Computes the Johnson-Cook equivalent stress
 def JohnsonCook(eps, epsp, T):
-    return (A + B * eps**n) * (1.0 + C * math.log(epsp/Epsp0)) * (1.0 - ((T - Tw) / (Tm - Tw))**m)
+    return (A + B * eps**n) * (1.0 + C * math.log(epsp/Epsp0)) * (1.0 - ((T - T0) / (Tm - T0))**m)
 
 # Computes the K law    
 def KLaw(T):
@@ -66,7 +70,7 @@ def KLaw(T):
 # Computes the CP law    
 def CpLaw(T):
     return 420 + 0.504 * (T - T0)
-       
+
 # Computes the TAB temperature, returns 0 if TAB  >  Tm
 def ComputeAB(): 
     # Sets TAB equal to Tw
@@ -82,7 +86,7 @@ def ComputeAB():
         kAB = (1.0/sqrt3) * JohnsonCook(EpsAB, EpspAB, TAB)
         # Computes the Fs value
         Fs = kAB * lAB * w
-         # Computes coefficient RT 
+        # Computes coefficient RT 
         RTtanPhi = math.tan(phi) * (rho * Cp * V * t1) / K
         # Computes beta 
         if (RTtanPhi > 10) :
@@ -90,10 +94,10 @@ def ComputeAB():
         else :
             beta = 0.5 - 0.35 * math.log10(RTtanPhi)
         # Computes the delta T
-        deltaTsz = ((1.0-beta) * Fs * Vs) / (mchip * Cp)
+        deltaTsz = ((1-beta) * Fs * Vs) / (mchip * Cp)
         # Computes the new TAB temperature
-        NewTAB = Tw + eta*deltaTsz
-        # Tests if TAB > Tmand return zero
+        NewTAB = Tw + eta * deltaTsz
+        # Tests if TAB > Tm and return zero
         if (NewTAB > Tm) : return 0, 0, 0, 0
         # Tests for the convergence of TAB (criterion is TAB_precision)
         if (abs(NewTAB - TAB) <= TAB_precision) :
@@ -103,7 +107,7 @@ def ComputeAB():
         maxLoops -= 1
     # Oups ! no convergence at least after so many loops 
     return 0, 0, 0, 0
-           
+   
 # Computes the Tc temperature
 def ComputeTc(deltaTsz): 
     Tc = Tw + deltaTsz
@@ -137,7 +141,7 @@ def Compute_Toint_Kchip():
     # Plastic deformation in the AB zone
     gammaAB = 1/2 * math.cos(alpha) / (math.sin(phi) * math.cos(phi - alpha))
     EpsAB = gammaAB / sqrt3
-    # Deformation rate in tge AB zone
+    # Deformation rate in the AB zone
     gammapAB = C0 * Vs / lAB # not here
     EpspAB = gammapAB / sqrt3
     # Computes the TAB temperature
@@ -145,7 +149,7 @@ def Compute_Toint_Kchip():
     # If TAB > Tw returns an error
     if (TAB == 0): return 0, 1e10, 0, 0
     # Computes neq using Lalwani expression
-    neq = n * B * EpsAB**n / (A + B * EpsAB**n)
+    neq = (n * B * EpsAB**n) / (A + B * EpsAB**n)
     # Computes the theta angle
     theta = math.atan(1 + math.pi/2 - 2 * phi - C0 * neq)
     # Computes the resultant force R depending on Fs and theta
@@ -158,7 +162,7 @@ def Compute_Toint_Kchip():
     Fc = R * math.cos(theta - phi)
     Ft = R * math.sin(theta - phi)
     # Computes SigmaNp 
-    sigmaNmax = kAB*(1.0 + math.pi/2.0 - 2.0 * alpha - 2.0 * C0 * neq)
+    sigmaNmax = kAB * (1 + math.pi / 2 - 2 * alpha - 2 * C0 * neq)
     # Tool/Chip contact length
     lc = t1 * math.sin(theta) / (math.cos(Lambda) * math.sin(phi)) * (1 + C0 * neq / (3 * (1 + 2 * (math.pi/4 - phi) - C0 * neq)))
     # Stress along the interface
@@ -178,9 +182,7 @@ def Compute_Toint_Kchip():
     # Computes the RT factor
     RT = (rho * Cp * V * t1) / K
     # Computes the delta Tm value
-    # deltaTm = deltaTc*10.0**(0.06-0.195*delta*math.sqrt(RT*t2/lc)+0.5*math.log10(RT*t2/lc))
-    deltaTm = deltaTc * 10**(0.06 - 0.195 * delta * math.sqrt(RT * t2 / lc)) * \
-        math.sqrt(RT * t2 / lc)
+    deltaTm = deltaTc * 10**(0.06 - 0.195 * delta * math.sqrt(RT * t2 / lc)) * math.sqrt(RT * t2 / lc)
     # Mean temperature along the interface
     Tint = Tw + deltaTsz + psi * deltaTm
     # Stress flow within the chip
@@ -204,7 +206,7 @@ def InternalFittingFunction(paramsOpt2):
     # Computes the internal parameters
     Toint, kchip, sigmaN, sigmaNmax = Compute_Toint_Kchip()
     # Test if there was a bug in the last run
-    if (Toint == 0): print(V * 60, t1, 180 / math.pi * phi, C0, delta, ' FAILED\n')
+    #if (Toint == 0): print(V * 60, t1, 180 / math.pi * phi, C0, delta, ' FAILED\n')
     # Computes the gap for the optimizer
     Gap = [(Toint - kchip), (sigmaN - sigmaNmax)]
     # Increases the number of loops
@@ -250,9 +252,6 @@ paramsOpt1.add('delta', value = 0.015, min = 0.005, max = 0.2)
 paramsOpt2.add('C0', value = 6, min = 2, max = 10)
 paramsOpt2.add('phi', value = 26.5 * math.pi / 180, min = 8 * math.pi / 180, max = 45 * math.pi / 180)
 
-# Computes the mchip value
-mchip = rho*V*t1*w
-
 # Initialisation of the Optimizer
 ReinitializeParameters(paramsOpt1, paramsOpt2)
 
@@ -269,7 +268,7 @@ print("delta : ", round(delta, 3))
 print("Internal error : ", round(math.sqrt((Toint-kchip)**2 + (sigmaNmax-sigmaN)**2), 10), "Pa")
 print("Number of loops : ", nLoops_1, "and", nLoops_2)
 
-print("Shear angle : ", round(phi * 180/math.pi, 1), "deg")
+print("Shear angle : ", round(phi * 180/math.pi, 2), "deg")
 
 print("Cutting force Fc   : ", round(Fc, 1), "N (", round(Fc / w / 1000, 1), "N/mm)")
 print("Advancing force Fa : ", round(Ft, 1), "N (", round(Ft / w / 1000, 1), "N/mm)")
@@ -519,12 +518,12 @@ delta_opt = delta # = paramsOpt1['delta'].value
 #     pylab.rcParams['ytick.labelsize'] = 18
 #     ii = 0
 #     for advance in advances:
-#         pylab.plot (xs[ii], y[ii], label = lab+' ($t_1$ = '+str(round(advances[ii]*1e3, 2))+' mm)', linewidth = 3)
+#         pylab.plot (xs[ii], y[ii], label = lab+' ($t_1$ = '+ '%.2f'%round(advances[ii]*1e3, 2)+' mm)', linewidth = 3)
 #         ii += 1
 #     pylab.xlabel('Cutting speed $V$ (m/min)', fontsize = 22)
 #     pylab.ylabel(ylab, fontsize = 22)
 #     pylab.legend(loc = lp, bbox_to_anchor = bb, fontsize = 16, frameon = True, 
-#                          fancybox = True, shadow = True, ncol = 1, numpoints = 1)
+#                           fancybox = True, shadow = True, ncol = 1, numpoints = 1)
 #     #pylab.grid(True)
 #     pylab.title(tit, y = 1.04, fontsize = 22)
 #     pylab.savefig(nam, transparent = True, bbox_inches = 'tight', pad_inches = 0)
@@ -583,5 +582,3 @@ delta_opt = delta # = paramsOpt1['delta'].value
 # speeds = np.linspace(100, 400, 25, True)
 # advances =  np.array([0.15e-3, 0.2e-3, 0.25e-3, 0.3e-3, 0.4e-3, 0.5e-3])
 # PlotVariations(speeds, advances)
-
-
